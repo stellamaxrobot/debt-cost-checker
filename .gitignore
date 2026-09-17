@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+private/
+local-cases/
+*.log
+examples/
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+private/
+local-cases/
+*.log
+examples/
+web/
