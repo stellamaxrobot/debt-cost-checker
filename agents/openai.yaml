@@ -1,0 +1,4 @@
+interface:
+  display_name: "债务算清楚"
+  short_description: "看懂债权关系、欠款构成和逾期费用"
+  default_prompt: "使用 $debt-cost-checker 读取我的借款协议、账单和截图，按证据强弱重建欠款并给我一份简短易懂的结果，重点提示债权关系、欠款构成、高融资成本和最需要补充的材料。"

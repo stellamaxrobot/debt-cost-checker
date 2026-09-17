@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Debt Cost Checker overdue reconstruction case",
+  "type": "object",
+  "required": ["case_name", "as_of_date"],
+  "properties": {
+    "case_name": {"type": "string", "minLength": 1},
+    "currency": {"type": "string", "default": "CNY"},
+    "as_of_date": {"type": "string", "format": "date"},
+    "origination_date": {"type": "string", "format": "date"},
+    "amount_received": {"type": "number", "exclusiveMinimum": 0},
+    "amount_received_evidence": {"$ref": "#/$defs/evidence"},
+    "repayment_history_evidence": {"$ref": "#/$defs/evidence"},
+    "repayment_history_complete": {"type": "boolean", "default": false},
+    "normal_schedule_complete": {"type": "boolean", "default": false},
+    "fee_rules_evidence": {"$ref": "#/$defs/evidence"},
+    "creditor_relationship_evidence": {"$ref": "#/$defs/evidence"},
+    "allocation_order_evidence": {"$ref": "#/$defs/evidence"},
+    "disbursements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/datedAmount"}
+    },
+    "case_scope": {"enum": ["loan_lifecycle", "post_compensation_recovery"]},
+    "scheduled_payments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["due_date", "components"],
+        "properties": {
+          "id": {"type": "string"},
+          "due_date": {"type": "string", "format": "date"},
+          "components": {
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": {"enum": ["principal", "normal_interest", "penalty_interest", "liquidated_damages", "guarantee_fee", "insurance_fee", "service_fee", "collection_cost", "other_fee"]},
+            "additionalProperties": {"type": "number", "minimum": 0}
+          },
+          "status": {"$ref": "#/$defs/status"},
+          "evidence_type": {"$ref": "#/$defs/evidenceType"},
+          "include_in_calculation": {"type": "boolean"},
+          "source": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "opening_balance": {
+      "type": "object",
+      "required": ["date", "components"],
+      "properties": {
+        "id": {"type": "string"},
+        "date": {"type": "string", "format": "date"},
+        "components": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"enum": ["principal", "normal_interest", "penalty_interest", "liquidated_damages", "guarantee_fee", "insurance_fee", "service_fee", "collection_cost", "other_fee"]},
+          "additionalProperties": {"type": "number", "minimum": 0}
+        },
+        "status": {"$ref": "#/$defs/status"},
+        "evidence_type": {"$ref": "#/$defs/evidenceType"},
+        "include_in_calculation": {"type": "boolean"},
+        "source": {}
+      },
+      "additionalProperties": true
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/datedAmount"},
+          {
+            "type": "object",
+            "properties": {
+              "type": {"enum": ["repayment", "waiver"]},
+              "category": {"$ref": "#/$defs/category"},
+              "include_in_calculation": {"type": "boolean"}
+            }
+          }
+        ]
+      }
+    },
+    "allocation_order": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/category"}
+    },
+    "fee_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "base", "rate_unit", "rate_value"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "category": {"$ref": "#/$defs/category"},
+          "base": {"enum": ["overdue_principal", "overdue_principal_and_interest", "outstanding_principal", "amount_received"]},
+          "rate_unit": {"enum": ["annual_pct", "monthly_pct", "daily_pct"]},
+          "rate_value": {"type": "number", "exclusiveMinimum": 0},
+          "year_days": {"type": "number", "exclusiveMinimum": 0},
+          "month_days": {"type": "number", "exclusiveMinimum": 0},
+          "start_after_days": {"type": "integer", "minimum": 0},
+          "starts_on": {"type": "string", "format": "date"},
+          "ends_on": {"type": "string", "format": "date"},
+          "status": {"$ref": "#/$defs/status"},
+          "evidence_type": {"$ref": "#/$defs/evidenceType"},
+          "include_in_calculation": {"type": "boolean"},
+          "source": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"enum": ["delinquency", "acceleration", "compensation", "assignment", "restructuring"]},
+          "date": {"type": "string", "format": "date"},
+          "status": {"$ref": "#/$defs/status"},
+          "evidence_type": {"$ref": "#/$defs/evidenceType"},
+          "include_future_interest": {"type": "boolean"},
+          "include_future_fees": {"type": "boolean"},
+          "source": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "balance_claims": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/datedAmount"},
+          {
+            "type": "object",
+            "properties": {
+              "party": {"type": "string"},
+              "status": {"const": "claimed"}
+            }
+          }
+        ]
+      }
+    },
+    "forecast_dates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "format": "date"}
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role"],
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "role": {"enum": ["borrower", "platform", "lender", "service_provider", "guarantor", "counter_guarantor", "insurer", "compensating_party", "assignee", "collector"]},
+          "status": {"$ref": "#/$defs/status"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "type", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "from": {"type": "string"},
+          "to": {"type": "string"},
+          "type": {"enum": ["funded", "serviced", "guaranteed", "counter_guaranteed", "insured", "compensated", "assigned", "collects_for"]},
+          "effective_date": {"type": ["string", "null"], "format": "date"},
+          "amount": {"type": ["number", "null"], "minimum": 0},
+          "status": {"$ref": "#/$defs/status"},
+          "evidence_type": {"$ref": "#/$defs/evidenceType"},
+          "subrogation_confirmed": {"type": "boolean"},
+          "scope": {"enum": ["full", "partial", "unknown"]},
+          "source": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "unknown_items": {"type": "array", "items": {"type": "string"}},
+    "risk_context": {
+      "type": "object",
+      "properties": {
+        "nominal_annual_rate_pct": {"type": "number", "minimum": 0},
+        "high_cost_attention_pct": {"type": "number", "minimum": 0},
+        "high_cost_attention_source": {"type": "string"},
+        "overdue_cost_attention_pct": {"type": "number", "minimum": 0},
+        "overdue_cost_attention_source": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [{"anyOf": [
+    {"required": ["amount_received"]},
+    {"required": ["disbursements"]}
+  ]}, {"oneOf": [
+    {"required": ["scheduled_payments"], "properties": {"scheduled_payments": {"minItems": 1}}, "not": {"required": ["opening_balance"]}},
+    {"required": ["opening_balance"], "properties": {"scheduled_payments": {"maxItems": 0}}}
+  ]}],
+  "$defs": {
+    "status": {"enum": ["confirmed", "claimed", "inferred", "assumed", "contractual_only", "unknown"]},
+    "evidenceType": {"enum": ["bank_transaction", "court_finding", "signed_case_document", "platform_itemized_statement", "official_notice", "app_screenshot", "collector_written_statement", "borrower_recollection", "public_template", "unknown"]},
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "evidence_type": {"$ref": "#/$defs/evidenceType"},
+        "status": {"$ref": "#/$defs/status"},
+        "source": {}
+      },
+      "additionalProperties": true
+    },
+    "category": {"enum": ["principal", "normal_interest", "penalty_interest", "liquidated_damages", "guarantee_fee", "insurance_fee", "service_fee", "collection_cost", "other_fee"]},
+    "datedAmount": {
+      "type": "object",
+      "required": ["date", "amount"],
+      "properties": {
+        "id": {"type": "string"},
+        "date": {"type": "string", "format": "date"},
+        "amount": {"type": "number", "exclusiveMinimum": 0},
+        "status": {"$ref": "#/$defs/status"},
+        "evidence_type": {"$ref": "#/$defs/evidenceType"},
+        "source": {}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
