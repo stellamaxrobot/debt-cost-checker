@@ -1,3 +1,5 @@
+**[Non-commercial license](LICENSE.md):** Free for non-commercial personal, educational, research, and public-interest use. Commercial use requires prior written permission. Source-available; not an OSI-approved open-source license.
+
 <div align="center">
 
 **English** | [简体中文](README.zh-CN.md)
